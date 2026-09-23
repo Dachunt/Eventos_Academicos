@@ -54,6 +54,20 @@ final class EventoRepository
     /**
      * @return list<array<string, mixed>>
      */
+    public function obtenerTiposEvento(): array
+    {
+        $statement = $this->pdo->query(
+            'SELECT id, nombre
+             FROM tipos_evento
+             ORDER BY nombre ASC'
+        );
+
+        return $statement->fetchAll();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function obtenerTodos(): array
     {
         $statement = $this->pdo->query(

@@ -12,7 +12,7 @@ final class Database
     public static function conectar(): PDO
     {
         $host = getenv('DB_HOST') ?: '127.0.0.1';
-        $port = getenv('DB_PORT') ?: '3307';
+        $port = getenv('DB_PORT') ?: '3308';
         $name = getenv('DB_NAME') ?: 'eventos_db';
         $user = getenv('DB_USER') ?: 'eventos_user';
         $password = getenv('DB_PASSWORD') ?: 'eventos_password';

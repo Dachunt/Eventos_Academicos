@@ -3,7 +3,7 @@
     "description": "Capa de datos PHP para la Agenda de Eventos Académicos.",
     "type": "project",
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.1",
         "ext-pdo": "*",
         "ext-pdo_mysql": "*"
     },

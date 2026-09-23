@@ -2,102 +2,118 @@
 
 ## Integrantes
 
-- Apellido Apellido, Nombre - Carnet
-- Apellido Apellido, Nombre - Carnet
+- Diego Andrés Hernández Contreras 2022HC650
+- Rodolfo Rivas Rodriguez 2022RR651
 
-## Alcance de esta entrega
+## Caso asignado
 
-Esta etapa se trabaja en pareja y cubre la base de datos y la clase Repository del caso 4. La aplicación web, los formularios HTML, las vistas y el flujo POST/Redirect/Get se agregarán en la siguiente etapa.
+Agenda de Eventos Académicos
+
+## Descripción
+
+Aplicación web para registrar eventos académicos con cupos máximos e inscritos, validación del lado del servidor, carga dinámica de tipos, listado ordenado por fecha y bloqueo de eliminaciones para eventos ya finalizados.
 
 ## Tecnologías
 
-- PHP 8.2 o superior.
-- Composer.
-- MariaDB 11 ejecutándose en un contenedor Docker liviano.
-- PDO con consultas preparadas.
+- PHP 8.1+
+- Composer
+- MariaDB 11 en Docker
+- PDO con consultas preparadas
 
-## Estructura
+## Estructura del proyecto
 
 ```text
 .
 ├── composer.json
-├── database/schema.sql
+├── README.md
+├── database/
+│   ├── schema.sql
+│   └── respaldo_bd.sql
 ├── docker-compose.yml
-├── scripts/verificar_repository.php
-└── src/
-    ├── Config/Database.php
-    └── Repository/EventoRepository.php
+├── public/
+│   ├── crear.php
+│   ├── editar.php
+│   ├── eliminar.php
+│   ├── index.php
+│   ├── procesar.php
+│   └── css/
+│       └── estilos.css
+├── scripts/
+│   └── verificar_repository.php
+├── src/
+│   ├── Config/
+│   │   └── Database.php
+│   └── Repository/
+│       └── EventoRepository.php
+└── vendor/   (generado con Composer, no se entrega)
 ```
+
+## Requisitos del entorno
+
+1. Tener Docker Desktop o Docker Engine instalado.
+2. Tener PHP 8.2+ y Composer instalados en la máquina local.
+3. Tener acceso al puerto 3308 para MariaDB.
 
 ## Cómo ejecutar
 
-1. Copiar `.env.example` como `.env` si se desean personalizar las variables. Los valores predeterminados funcionan sin crear el archivo.
-2. Iniciar MariaDB:
+1. Iniciar la base de datos:
 
    ```bash
    docker compose up -d
    ```
 
-   El primer inicio crea `eventos_db`, las tablas, los tipos de evento y cinco eventos semilla.
-
-3. Instalar dependencias y generar el autoload:
+2. Instalar dependencias de Composer:
 
    ```bash
    composer install
-   composer dump-autoload
    ```
 
-4. Ejecutar la verificación del Repository:
+3. Ejecutar la validación del repositorio:
 
    ```bash
    php scripts/verificar_repository.php
    ```
 
-5. Detener el contenedor cuando termine el trabajo:
+4. Iniciar la aplicación web desde la carpeta public:
+
+   ```bash
+   php -S 127.0.0.1:8000 -t public
+   ```
+
+5. Abrir en el navegador:
+
+   ```text
+   http://127.0.0.1:8000/index.php
+   ```
+
+6. Para detener la base de datos:
 
    ```bash
    docker compose down
    ```
 
-Para eliminar también los datos persistidos y volver a ejecutar el script de inicialización SQL:
+## Variables de entorno
 
-```bash
-docker compose down -v
+El proyecto usa estas variables por defecto:
+
+```env
+DB_HOST=127.0.0.1
+DB_PORT=3308
+DB_NAME=eventos_db
+DB_USER=eventos_user
+DB_PASSWORD=eventos_password
 ```
 
-## Configuración de conexión
+## Validaciones implementadas
 
-| Variable      | Valor predeterminado |
-| ------------- | -------------------- |
-| `DB_HOST`     | `127.0.0.1`          |
-| `DB_PORT`     | `3307`               |
-| `DB_NAME`     | `eventos_db`         |
-| `DB_USER`     | `eventos_user`       |
-| `DB_PASSWORD` | `eventos_password`   |
-
-El puerto `3307` evita asumir que el puerto local `3306` está libre. PHP se ejecuta en el equipo anfitrión y se conecta mediante el puerto publicado por Docker.
-
-## Funcionalidades implementadas
-
-- [x] CREATE mediante `EventoRepository::crear()`.
-- [x] READ mediante `obtenerTodos()` y `obtenerPorId()`.
-- [x] UPDATE mediante `actualizar()`.
-- [x] DELETE mediante `eliminar()`.
-- [x] Relación `eventos.tipo_id` con `tipos_evento.id`.
-- [x] Consultas preparadas para datos recibidos externamente.
-- [x] Validación de título, fecha, hora, lugar, tipo, cupo e inscritos.
-- [x] Cálculo de cupos disponibles.
-- [x] Bloqueo de eliminación para eventos cuya fecha ya pasó.
-- [x] Script PHP de verificación sin formularios.
+- Título entre 5 y 150 caracteres.
+- Fecha del evento igual o posterior a la actual en creación.
+- Cupo entre 1 y 300.
+- Inscritos mayor o igual a 0 y no mayor que el cupo.
+- Tipo de evento válido.
+- Lugar obligatorio y máximo 100 caracteres.
+- Eliminación bloqueada si la fecha del evento ya pasó.
 
 ## Regla de negocio
 
-Un evento cuya fecha ya pasó no puede eliminarse para conservar el historial. El Repository lanza una excepción con un mensaje claro. Los formularios futuros deberán mostrar una pantalla de confirmación y enviar la eliminación exclusivamente por POST.
-
-## Anotaciones de conceptos
-
-El código incluye anotaciones `[CONCEPTO]` sobre encapsulación, abstracción, inyección de dependencias, seguridad, consultas preparadas y regla de negocio.
-
-## Entrega posterior
-
-Antes de comprimir el proyecto se debe exportar el estado final de la base de datos como `database/respaldo_bd.sql`, excluir `vendor/` y completar los datos reales de los integrantes.
+Los eventos cuya fecha ya pasó aparecen en el listado con la etiqueta "Finalizado" y no pueden eliminarse. La eliminación solo se ejecuta mediante un formulario de confirmación que usa POST.
